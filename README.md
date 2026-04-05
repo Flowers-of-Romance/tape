@@ -1,14 +1,17 @@
-# turns
+# tape
 
 全LLM会話をmarkdownに記録する。それだけ。
 
-## 対応CLI
+## 対応
 
-| CLI | hook設定 |
+| ツール | 方式 |
 |---|---|
-| Claude Code | `settings.json` → `hooks` |
-| Gemini CLI | `.gemini/settings.json` → `hooks` |
-| Kiro | agent config → `hooks` |
+| Claude Code | hook |
+| Gemini CLI | hook |
+| Kiro | hook |
+| Ollama | OpenAI互換APIラッパー |
+| LM Studio | OpenAI互換APIラッパー |
+| llama.cpp | OpenAI互換APIラッパー |
 
 ## セットアップ
 
@@ -53,6 +56,30 @@
 }
 ```
 
+### 3. ローカルLLM（hookなし）
+
+Pythonから直接呼ぶ:
+
+```python
+from hooks.openai_compat import chat
+
+# Ollama
+chat("gemma2", [{"role": "user", "content": "hello"}])
+
+# LM Studio
+chat("local-model", messages, base_url="http://localhost:1234/v1")
+
+# llama.cpp
+chat("default", messages, base_url="http://localhost:8080/v1")
+```
+
+CLIから:
+
+```bash
+python hooks/openai_compat.py "こんにちは" --model gemma2
+python hooks/openai_compat.py "hello" --url http://localhost:1234/v1
+```
+
 ## 出力
 
 日付別markdown (`YYYY-MM-DD.md`):
@@ -76,12 +103,13 @@ tags: [turns]
 ## 構成
 
 ```
-turns/
-├── turn.py          # コア（md追記ロジック）
-├── config.json      # 出力先・タイムゾーン
+tape/
+├── turn.py              # コア（md追記ロジック）
+├── config.json          # 出力先・タイムゾーン
 ├── hooks/
-│   ├── claude.py    # Claude Code adapter
-│   ├── gemini.py    # Gemini CLI adapter
-│   └── kiro.py      # Kiro adapter
+│   ├── claude.py        # Claude Code adapter
+│   ├── gemini.py        # Gemini CLI adapter
+│   ├── kiro.py          # Kiro adapter
+│   └── openai_compat.py # Ollama / LM Studio / llama.cpp
 └── README.md
 ```
